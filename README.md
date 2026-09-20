@@ -16,8 +16,8 @@ These skills establish strict spec-driven engineering, automated multi-agent gov
 
 | Skill | Purpose | Primary Triggers |
 |---|---|---|
-| [`init-project`](skills/init-project/SKILL.md) | Universal multi-agent project bootstrapper. Configures `AGENTS.md`, `ARCHITECTURE.md`, `README.md`, context scratchpads, zero-leak rules, and runtime verification. | `init project`, `setup project`, `создать проект` |
-| [`prod-readiness-audit`](skills/prod-readiness-audit/SKILL.md) | Deep pre-launch audit across 6 pillars: Security/Secrets, SEO/GEO 2026, Forms/CTA, Lighthouse CWV, Media, and Consent Compliance. Outputs `AUDIT_REPORT.md`. | `prod-readiness-audit`, `audit prod`, `проверить перед запуском` |
+| [`init-project`](skills/init-project/SKILL.md) | Universal multi-agent project bootstrapper. Configures `AGENTS.md`, `ARCHITECTURE.md`, `README.md`, context scratchpads, zero-leak rules, and runtime verification. | `init project`, `setup project`, `bootstrap agent governance` |
+| [`prod-readiness-audit`](skills/prod-readiness-audit/SKILL.md) | Deep pre-launch audit across 6 pillars: Security/Secrets, SEO/GEO 2026, Forms/CTA, Lighthouse CWV, Media, and Consent Compliance. Outputs `AUDIT_REPORT.md`. | `prod-readiness-audit`, `audit prod`, `preflight check` |
 
 ---
 

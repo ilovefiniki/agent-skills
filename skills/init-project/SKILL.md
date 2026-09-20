@@ -13,7 +13,7 @@ Sets up universal agent governance (`AGENTS.md`, `GEMINI.md`, `CLAUDE.md`), dyna
 
 Run whenever the user or agent initiates project setup:
 - `init project`, `init-project`, `initialize project`, `setup project`
-- `создать проект`, `настроить правила проекта`, `добавить агентов`, `инициализировать репозиторий`
+- `configure project rules`, `bootstrap agent governance`, `setup agents`
 - When opening a new repo or workspace and establishing AI agent governance rules.
 
 ---

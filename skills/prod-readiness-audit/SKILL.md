@@ -13,7 +13,7 @@ Run this skill before deploying a new project to production, launching a public 
 
 Run whenever the user or agent initiates a launch review:
 - `prod-readiness-audit`, `audit prod`, `preflight check`, `audit production`
-- `проверить прод`, `финальный аудит`, `проверить перед запуском`, `аудит перед релизом`
+- `verify launch readiness`, `pre-release audit`, `check production readiness`
 - When performing a comprehensive pre-launch quality assurance and security pass.
 
 ---
