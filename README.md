@@ -18,6 +18,12 @@ These skills establish strict spec-driven engineering, automated multi-agent gov
 |---|---|---|
 | [`init-project`](skills/init-project/SKILL.md) | Universal multi-agent project bootstrapper. Configures `AGENTS.md`, `ARCHITECTURE.md`, `README.md`, context scratchpads, zero-leak rules, and runtime verification. | `init project`, `setup project`, `bootstrap agent governance` |
 | [`prod-readiness-audit`](skills/prod-readiness-audit/SKILL.md) | Deep pre-launch audit across 6 pillars: Security/Secrets, SEO/GEO 2026, Forms/CTA, Lighthouse CWV, Media, and Consent Compliance. Outputs `AUDIT_REPORT.md`. | `prod-readiness-audit`, `audit prod`, `preflight check` |
+| [`infographic-engine`](skills/infographic-engine/SKILL.md) | Code-first HTML/CSS/SVG architecture visualizer (CAD blueprints, dynamic ROI sliders, trace replay, metric grids). | `infographic-engine`, `create diagram`, `visualize architecture` |
+| [`social-screenshot-creator`](skills/social-screenshot-creator/SKILL.md) | Realistic 2x Retina screenshots for LinkedIn, Threads, and X via Playwright with neutral persona defaults. | `social-screenshot-creator`, `make screenshot post`, `create preview` |
+| [`linkedin-carousel-creator`](skills/linkedin-carousel-creator/SKILL.md) | Publication-ready 1080×1350 PDF carousels for LinkedIn across dark, paper, and cream editorial themes. | `linkedin-carousel-creator`, `make carousel`, `generate slides` |
+| [`youtube-summary-extractor`](skills/youtube-summary-extractor/SKILL.md) | Zero-download YouTube transcript, chapter, and executive summary extractor with rate-guard. | `youtube-summary-extractor`, `summarize video`, `get transcript` |
+| [`youtube-action-planner`](skills/youtube-action-planner/SKILL.md) | Multi-video topic researcher: batch extracts transcripts from top 10 videos and synthesizes an actionable plan. | `youtube-action-planner`, `research topic`, `generate action plan` |
+| [`instagram-reels-analyzer`](skills/instagram-reels-analyzer/SKILL.md) | Anonymous Reels downloader + multimodal inspector (hooks, on-screen text, pacing) with 0 account risk. | `instagram-reels-analyzer`, `analyze reel`, `inspect reel` |
 
 ---
 

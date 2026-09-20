@@ -37,6 +37,12 @@ install_skill() {
 if [ "$SKILL_NAME" = "all" ]; then
     install_skill "init-project"
     install_skill "prod-readiness-audit"
+    install_skill "infographic-engine"
+    install_skill "social-screenshot-creator"
+    install_skill "linkedin-carousel-creator"
+    install_skill "youtube-summary-extractor"
+    install_skill "youtube-action-planner"
+    install_skill "instagram-reels-analyzer"
 else
     install_skill "$SKILL_NAME"
 fi
