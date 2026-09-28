@@ -24,6 +24,7 @@ These skills establish strict spec-driven engineering, automated multi-agent gov
 | [`youtube-summary-extractor`](skills/youtube-summary-extractor/SKILL.md) | Zero-download YouTube transcript, chapter, and executive summary extractor with rate-guard. | `youtube-summary-extractor`, `summarize video`, `get transcript` |
 | [`youtube-action-planner`](skills/youtube-action-planner/SKILL.md) | Multi-video topic researcher: batch extracts transcripts from top 10 videos and synthesizes an actionable plan. | `youtube-action-planner`, `research topic`, `generate action plan` |
 | [`instagram-reels-analyzer`](skills/instagram-reels-analyzer/SKILL.md) | Anonymous Reels downloader + multimodal inspector (hooks, on-screen text, pacing) with 0 account risk. | `instagram-reels-analyzer`, `analyze reel`, `inspect reel` |
+| [`design-director`](skills/design-director/SKILL.md) | Master frontend design orchestrator. Bans AI-slop, enforces Design Read, and routes UI tasks to three specialized engines: taste-skill (landings), ui-ux-pro-max (SaaS/dashboards), superdesign (concept exploration). | `design-director`, `use design-director`, `enforce design taste` |
 
 ---
 

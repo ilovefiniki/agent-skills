@@ -1,0 +1,4 @@
+interface:
+  display_name: "Design Director"
+  short_description: "Master frontend orchestrator (taste-skill, ui-ux-pro-max, superdesign)"
+  default_prompt: "Use $design-director to plan and execute the frontend design."
