@@ -1,0 +1,82 @@
+[
+  {
+    "id": "david_miller",
+    "name": "David Miller",
+    "handle": "davidmiller_dev",
+    "role": "Senior Backend Engineer",
+    "avatar": "david_miller.jpg",
+    "gender": "male"
+  },
+  {
+    "id": "sarah_jenkins",
+    "name": "Sarah Jenkins",
+    "handle": "sarahj_design",
+    "role": "Lead Product Designer",
+    "avatar": "sarah_jenkins.jpg",
+    "gender": "female"
+  },
+  {
+    "id": "alex_chen",
+    "name": "Alex Chen",
+    "handle": "alexc_systems",
+    "role": "AI Architect & Tech Lead",
+    "avatar": "alex_chen.jpg",
+    "gender": "male"
+  },
+  {
+    "id": "elena_rostova",
+    "name": "Elena Rostova",
+    "handle": "elena_frontend",
+    "role": "Frontend Engineering Lead",
+    "avatar": "elena_rostova.jpg",
+    "gender": "female"
+  },
+  {
+    "id": "marcus_vance",
+    "name": "Marcus Vance",
+    "handle": "marcus_cloud",
+    "role": "DevOps & Cloud Architect",
+    "avatar": "marcus_vance.jpg",
+    "gender": "male"
+  },
+  {
+    "id": "maya_patel",
+    "name": "Maya Patel",
+    "handle": "mayapatel_pm",
+    "role": "Head of Product",
+    "avatar": "maya_patel.jpg",
+    "gender": "female"
+  },
+  {
+    "id": "liam_oconnor",
+    "name": "Liam O'Connor",
+    "handle": "liam_fullstack",
+    "role": "Fullstack Developer",
+    "avatar": "liam_oconnor.jpg",
+    "gender": "male"
+  },
+  {
+    "id": "chloe_dubois",
+    "name": "Chloe Dubois",
+    "handle": "chloe_vp_eng",
+    "role": "VP of Engineering",
+    "avatar": "chloe_vp.jpg",
+    "gender": "female"
+  },
+  {
+    "id": "lucas_meyer",
+    "name": "Lucas Meyer",
+    "handle": "lucasmeyer_ml",
+    "role": "ML Research Engineer",
+    "avatar": "lucas_meyer.jpg",
+    "gender": "male"
+  },
+  {
+    "id": "sofia_rossi",
+    "name": "Sofia Rossi",
+    "handle": "sofiarossi_b2b",
+    "role": "B2B Marketing Director",
+    "avatar": "sofia_rossi.jpg",
+    "gender": "female"
+  }
+]

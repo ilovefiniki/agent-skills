@@ -1,24 +1,35 @@
 #!/usr/bin/env python3
 """
 Social Media Sticker / Quote Card Generator (Playwright + HTML)
-Generates high-contrast, casual tilted "sticker cards" on a light dot-grid background.
+Generates high-contrast, casually tilted "sticker cards" on a stylish canvas.
+Supports dual or single card modes, and automatic fictional AI-generated personas.
 
-Usage:
+Usage (dual quotes with automatic fictional personas):
   python3 generate_stickers.py \
     --card1-text "AI produces average results." \
-    --card1-name "David Miller" \
-    --card1-handle "davidmiller_dev" \
-    --card1-avatar "/path/to/avatar1.jpg" \
     --card2-text "Only non-professionals like what AI makes." \
-    --card2-name "Sarah Jenkins" \
-    --card2-handle "sarahj_design" \
-    --card2-avatar "/path/to/avatar2.jpg" \
+    --output "/path/to/output.png"
+
+Usage (single quote):
+  python3 generate_stickers.py \
+    --mode single \
+    --card1-text "AI made code cheap. The hardest decision is knowing when to stop." \
+    --output "/path/to/single_quote.png"
+
+Usage (specific personas or custom names):
+  python3 generate_stickers.py \
+    --card1-persona "alex_chen" \
+    --card1-text "Why pay $20/month when you can build it in an evening?" \
+    --card2-persona "sarah_jenkins" \
+    --card2-text "Because maintenance costs $2,000/month." \
     --output "/path/to/output.png"
 """
 
 import argparse
 import base64
+import json
 import os
+import random
 import sys
 from pathlib import Path
 from playwright.sync_api import sync_playwright
@@ -32,38 +43,157 @@ try:
 except ImportError:
     clean_file_path = None
 
+ASSETS_DIR = Path(__file__).resolve().parent.parent / "assets"
+PERSONAS_FILE = ASSETS_DIR / "personas.json"
+AVATARS_DIR = ASSETS_DIR / "avatars"
+
+
+def load_personas() -> list[dict]:
+    if PERSONAS_FILE.exists():
+        try:
+            with open(PERSONAS_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception as e:
+            print(f"Warning: could not load personas.json: {e}")
+    return []
+
+
+def get_persona(persona_id_or_random: str = "random", gender_filter: str = None, exclude_id: str = None) -> dict:
+    personas = load_personas()
+    if not personas:
+        # Fallback default
+        return {
+            "id": "david_miller",
+            "name": "David Miller",
+            "handle": "davidmiller_dev",
+            "role": "Senior Engineer",
+            "avatar": "david_miller.jpg",
+            "gender": "male"
+        }
+
+    if persona_id_or_random and persona_id_or_random != "random":
+        for p in personas:
+            if p["id"].lower() == persona_id_or_random.lower() or p["name"].lower() == persona_id_or_random.lower():
+                return p
+
+    candidates = personas
+    if exclude_id:
+        candidates = [p for p in candidates if p["id"] != exclude_id]
+    if gender_filter:
+        filtered = [p for p in candidates if p.get("gender") == gender_filter]
+        if filtered:
+            candidates = filtered
+
+    return random.choice(candidates if candidates else personas)
+
+
+def resolve_avatar_path(avatar_val: str) -> str:
+    if not avatar_val:
+        return str(AVATARS_DIR / "david_miller.jpg")
+    p = Path(avatar_val)
+    if p.is_file():
+        return str(p)
+    # Check in AVATARS_DIR
+    in_avatars = AVATARS_DIR / avatar_val
+    if in_avatars.is_file():
+        return str(in_avatars)
+    # Return default
+    default_av = AVATARS_DIR / "david_miller.jpg"
+    return str(default_av) if default_av.is_file() else avatar_val
+
 
 def image_to_data_uri(path: str) -> str:
-    with open(path, "rb") as f:
+    resolved = resolve_avatar_path(path)
+    if not Path(resolved).exists():
+        # Fallback 1x1 transparent pixel
+        return "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="
+    with open(resolved, "rb") as f:
         data = base64.b64encode(f.read()).decode()
-    ext = Path(path).suffix.lower().lstrip(".")
+    ext = Path(resolved).suffix.lower().lstrip(".")
     mime = {"jpg": "jpeg", "jpeg": "jpeg", "png": "png", "webp": "webp"}.get(ext, "jpeg")
     return f"data:image/{mime};base64,{data}"
 
 
-def build_sticker_html(card1: dict, card2: dict) -> str:
-    male_uri = image_to_data_uri(card1["avatar"])
-    female_uri = image_to_data_uri(card2["avatar"])
+def build_sticker_html(card1: dict, card2: dict = None, mode: str = "dual", bg_style: str = "dot-grid") -> str:
+    c1_uri = image_to_data_uri(card1["avatar"])
+    c2_uri = image_to_data_uri(card2["avatar"]) if card2 else ""
 
-    html_template = """<!DOCTYPE html>
+    bg_css = """
+      background: #F4F5F7;
+      background-image: 
+        radial-gradient(#D1D5DB 1.5px, transparent 1.5px),
+        radial-gradient(#D1D5DB 1.5px, #F4F5F7 1.5px);
+      background-size: 28px 28px;
+      background-position: 0 0, 14px 14px;
+    """
+    if bg_style == "dark-dot-grid":
+        bg_css = """
+          background: #0F1115;
+          background-image: 
+            radial-gradient(#262B33 1.5px, transparent 1.5px),
+            radial-gradient(#262B33 1.5px, #0F1115 1.5px);
+          background-size: 28px 28px;
+          background-position: 0 0, 14px 14px;
+        """
+    elif bg_style == "clean-light":
+        bg_css = "background: #F8F9FA;"
+
+    # Single card vs dual card positioning
+    if mode == "single":
+        card_layout_css = """
+          .cards-container {
+            position: relative;
+            width: 1000px;
+            height: 920px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+          .card-1 {
+            position: relative;
+            transform: rotate(-2.5deg);
+            z-index: 1;
+            margin: auto;
+          }
+          .card-2 {
+            display: none;
+          }
+        """
+    else:
+        card_layout_css = """
+          .cards-container {
+            position: relative;
+            width: 1000px;
+            height: 920px;
+          }
+          .card-1 {
+            top: 120px;
+            left: 45px;
+            transform: rotate(-4.2deg);
+            z-index: 1;
+          }
+          .card-2 {
+            top: 450px;
+            left: 115px;
+            transform: rotate(3.6deg);
+            z-index: 2;
+          }
+        """
+
+    html_template = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <style>
-  * {
+  * {{
     box-sizing: border-box;
     margin: 0;
     padding: 0;
-  }
-  body {
+  }}
+  body {{
     width: 1080px;
     height: 1080px;
-    background: #F4F5F7;
-    background-image: 
-      radial-gradient(#D1D5DB 1.5px, transparent 1.5px),
-      radial-gradient(#D1D5DB 1.5px, #F4F5F7 1.5px);
-    background-size: 28px 28px;
-    background-position: 0 0, 14px 14px;
+    {bg_css}
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -71,15 +201,11 @@ def build_sticker_html(card1: dict, card2: dict) -> str:
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     color: #E7E9EA;
     overflow: hidden;
-  }
+  }}
 
-  .cards-container {
-    position: relative;
-    width: 1000px;
-    height: 920px;
-  }
+  {card_layout_css}
 
-  .card {
+  .card {{
     width: 840px;
     background: #000000;
     border: 1px solid #2F3336;
@@ -93,88 +219,74 @@ def build_sticker_html(card1: dict, card2: dict) -> str:
     display: flex;
     flex-direction: column;
     gap: 20px;
-  }
+  }}
 
-  .card-1 {
-    top: 120px;
-    left: 45px;
-    transform: rotate(-4.2deg);
-    z-index: 1;
-  }
-
-  .card-2 {
-    top: 450px;
-    left: 115px;
-    transform: rotate(3.6deg);
-    z-index: 2;
-  }
-
-  .header {
+  .header {{
     display: flex;
     align-items: center;
     justify-content: space-between;
-  }
+  }}
 
-  .user-info {
+  .user-info {{
     display: flex;
     align-items: center;
     gap: 16px;
-  }
+  }}
 
-  .avatar {
+  .avatar {{
     width: 60px;
     height: 60px;
     border-radius: 50%;
     object-fit: cover;
     border: 1px solid rgba(255, 255, 255, 0.12);
-  }
+  }}
 
-  .names {
+  .names {{
     display: flex;
     flex-direction: column;
     gap: 2px;
-  }
+  }}
 
-  .name-row {
+  .name-row {{
     display: flex;
     align-items: center;
     gap: 6px;
-  }
+  }}
 
-  .name {
+  .name {{
     font-weight: 700;
     font-size: 21px;
     color: #F7F9F9;
     letter-spacing: -0.2px;
-  }
+  }}
 
-  .verified {
+  .verified {{
     width: 19px;
     height: 19px;
     color: #1D9BF0;
-  }
+  }}
 
-  .handle-row {
+  .handle-row {{
     display: flex;
     align-items: center;
     gap: 6px;
     font-size: 16px;
     color: #71767B;
-  }
+  }}
 
-  .dots {
+  .dots {{
     color: #71767B;
-  }
+  }}
 
-  .content {
+  .content {{
     font-size: 32px;
     line-height: 1.32;
     font-weight: 600;
     color: #FFFFFF;
     letter-spacing: -0.3px;
-  }
+  }}
 
-  .actions {
+  .actions {{
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -183,19 +295,19 @@ def build_sticker_html(card1: dict, card2: dict) -> str:
     color: #71767B;
     font-size: 15px;
     font-weight: 500;
-  }
+  }}
 
-  .action-item {
+  .action-item {{
     display: flex;
     align-items: center;
     gap: 8px;
-  }
+  }}
 
-  .action-item svg {
+  .action-item svg {{
     width: 18px;
     height: 18px;
     fill: currentColor;
-  }
+  }}
 </style>
 </head>
 <body>
@@ -316,7 +428,7 @@ def build_sticker_html(card1: dict, card2: dict) -> str:
 </html>
 """
     replacements = {
-        "__CARD1_AVATAR__": male_uri,
+        "__CARD1_AVATAR__": c1_uri,
         "__CARD1_NAME__": card1.get("name", "David Miller"),
         "__CARD1_HANDLE__": card1.get("handle", "davidmiller_dev"),
         "__CARD1_TIME__": card1.get("time", "4h"),
@@ -325,17 +437,20 @@ def build_sticker_html(card1: dict, card2: dict) -> str:
         "__CARD1_RETWEETS__": card1.get("retweets", "19"),
         "__CARD1_LIKES__": card1.get("likes", "412"),
         "__CARD1_VIEWS__": card1.get("views", "32.4K"),
-
-        "__CARD2_AVATAR__": female_uri,
-        "__CARD2_NAME__": card2.get("name", "Sarah Jenkins"),
-        "__CARD2_HANDLE__": card2.get("handle", "sarahj_design"),
-        "__CARD2_TIME__": card2.get("time", "6h"),
-        "__CARD2_TEXT__": card2.get("text", "Only non-professionals like what AI makes."),
-        "__CARD2_REPLIES__": card2.get("replies", "92"),
-        "__CARD2_RETWEETS__": card2.get("retweets", "37"),
-        "__CARD2_LIKES__": card2.get("likes", "740"),
-        "__CARD2_VIEWS__": card2.get("views", "58.9K"),
     }
+
+    if card2:
+        replacements.update({
+            "__CARD2_AVATAR__": c2_uri,
+            "__CARD2_NAME__": card2.get("name", "Sarah Jenkins"),
+            "__CARD2_HANDLE__": card2.get("handle", "sarahj_design"),
+            "__CARD2_TIME__": card2.get("time", "6h"),
+            "__CARD2_TEXT__": card2.get("text", "Only non-professionals like what AI makes."),
+            "__CARD2_REPLIES__": card2.get("replies", "92"),
+            "__CARD2_RETWEETS__": card2.get("retweets", "37"),
+            "__CARD2_LIKES__": card2.get("likes", "740"),
+            "__CARD2_VIEWS__": card2.get("views", "58.9K"),
+        })
 
     for k, v in replacements.items():
         html_template = html_template.replace(k, str(v))
@@ -343,8 +458,8 @@ def build_sticker_html(card1: dict, card2: dict) -> str:
     return html_template
 
 
-def generate_stickers_image(card1: dict, card2: dict, output_path: str):
-    html_content = build_sticker_html(card1, card2)
+def generate_stickers_image(card1: dict, card2: dict = None, mode: str = "dual", bg_style: str = "dot-grid", output_path: str = ""):
+    html_content = build_sticker_html(card1, card2, mode=mode, bg_style=bg_style)
 
     with sync_playwright() as p:
         browser = p.chromium.launch()
@@ -365,21 +480,28 @@ def generate_stickers_image(card1: dict, card2: dict, output_path: str):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Generate sticker quote cards visual")
+    parser = argparse.ArgumentParser(description="Generate tilted sticker quote cards visual with fictional personas")
+    parser.add_argument("--mode", choices=["dual", "single"], default="dual", help="Card layout mode: dual (default) or single")
+    parser.add_argument("--bg-style", choices=["dot-grid", "dark-dot-grid", "clean-light"], default="dot-grid")
+
+    # Card 1 options
     parser.add_argument("--card1-text", required=True, help="Text for card 1")
-    parser.add_argument("--card1-name", default="David Miller")
-    parser.add_argument("--card1-handle", default="davidmiller_dev")
-    parser.add_argument("--card1-avatar", required=True)
+    parser.add_argument("--card1-persona", default=None, help="Persona ID or 'random'")
+    parser.add_argument("--card1-name", default=None)
+    parser.add_argument("--card1-handle", default=None)
+    parser.add_argument("--card1-avatar", default=None)
     parser.add_argument("--card1-time", default="4h")
     parser.add_argument("--card1-replies", default="48")
     parser.add_argument("--card1-retweets", default="19")
     parser.add_argument("--card1-likes", default="412")
     parser.add_argument("--card1-views", default="32.4K")
 
-    parser.add_argument("--card2-text", required=True, help="Text for card 2")
-    parser.add_argument("--card2-name", default="Sarah Jenkins")
-    parser.add_argument("--card2-handle", default="sarahj_design")
-    parser.add_argument("--card2-avatar", required=True)
+    # Card 2 options (required if mode == dual)
+    parser.add_argument("--card2-text", default=None, help="Text for card 2")
+    parser.add_argument("--card2-persona", default=None, help="Persona ID or 'random'")
+    parser.add_argument("--card2-name", default=None)
+    parser.add_argument("--card2-handle", default=None)
+    parser.add_argument("--card2-avatar", default=None)
     parser.add_argument("--card2-time", default="6h")
     parser.add_argument("--card2-replies", default="92")
     parser.add_argument("--card2-retweets", default="37")
@@ -389,27 +511,37 @@ if __name__ == "__main__":
     parser.add_argument("--output", required=True)
     args = parser.parse_args()
 
+    # Resolve Card 1 Persona
+    p1 = get_persona(persona_id_or_random=args.card1_persona or "random", gender_filter="male")
     c1 = {
         "text": args.card1_text,
-        "name": args.card1_name,
-        "handle": args.card1_handle,
-        "avatar": args.card1_avatar,
+        "name": args.card1_name or p1["name"],
+        "handle": args.card1_handle or p1["handle"],
+        "avatar": args.card1_avatar or p1["avatar"],
         "time": args.card1_time,
         "replies": args.card1_replies,
         "retweets": args.card1_retweets,
         "likes": args.card1_likes,
         "views": args.card1_views,
     }
-    c2 = {
-        "text": args.card2_text,
-        "name": args.card2_name,
-        "handle": args.card2_handle,
-        "avatar": args.card2_avatar,
-        "time": args.card2_time,
-        "replies": args.card2_replies,
-        "retweets": args.card2_retweets,
-        "likes": args.card2_likes,
-        "views": args.card2_views,
-    }
 
-    generate_stickers_image(c1, c2, args.output)
+    c2 = None
+    if args.mode == "dual":
+        card2_text = args.card2_text if args.card2_text else "Only non-professionals like what AI makes."
+        p2 = get_persona(persona_id_or_random=args.card2_persona or "random", gender_filter="female", exclude_id=p1.get("id"))
+        c2 = {
+            "text": card2_text,
+            "name": args.card2_name or p2["name"],
+            "handle": args.card2_handle or p2["handle"],
+            "avatar": args.card2_avatar or p2["avatar"],
+            "time": args.card2_time,
+            "replies": args.card2_replies,
+            "retweets": args.card2_retweets,
+            "likes": args.card2_likes,
+            "views": args.card2_views,
+        }
+
+    # Ensure output dir exists
+    Path(args.output).parent.mkdir(parents=True, exist_ok=True)
+
+    generate_stickers_image(c1, c2, mode=args.mode, bg_style=args.bg_style, output_path=args.output)

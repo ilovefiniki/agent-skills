@@ -5,16 +5,16 @@ description: Deep autonomous production readiness and pre-launch audit for web p
 
 # prod-readiness-audit
 
-Autonomous, comprehensive pre-launch and production readiness audit for web applications, SaaS platforms, and client websites.
+Autonomous, comprehensive pre-launch and production readiness audit for web applications and client websites.
 
 Run this skill before deploying a new project to production, launching a public domain, or releasing a major milestone. It evaluates the project across **6 critical pillars** and produces an actionable `AUDIT_REPORT.md` with an executive release verdict (`READY FOR LAUNCH`, `LAUNCH WITH CAVEATS`, or `BLOCKED`).
 
 ## Trigger
 
-Run whenever the user or agent initiates a launch review:
+Run whenever the user says:
 - `prod-readiness-audit`, `audit prod`, `preflight check`, `audit production`
-- `verify launch readiness`, `pre-release audit`, `check production readiness`
-- When performing a comprehensive pre-launch quality assurance and security pass.
+- `проверить прод`, `финальный аудит`, `проверить перед запуском`, `аудит перед релизом`
+- When asked to run a comprehensive health/launch audit on any web project.
 
 ---
 
@@ -49,15 +49,15 @@ Run the following checks:
      grep -rnE "(sk-[a-zA-Z0-9]{20,}|AIza[a-zA-Z0-9_\\-]{35}|ghp_[a-zA-Z0-9]{20,}|glpat-[a-zA-Z0-9\\-_]{20,})" . --exclude-dir={.git,node_modules,dist,.next}
      ```
    - Check recent commit diffs for accidental credentials: `git log -p -n 15 | grep -E "(BEGIN PRIVATE KEY|password:)"`.
-2. **Skill & Tool Security Scan:**
-   - If project uses custom agent skills or MCP tools, run static security analysis (e.g. via `skillspector` if installed):
+2. **Skill & Plugin Security (NVIDIA SkillSpector):**
+   - If project uses custom agent skills or MCP tools, run static security analysis:
      ```bash
-     skillspector scan --no-llm . 2>/dev/null || echo "Static skill scan completed"
+     /Users/vit/.local/bin/skillspector scan --no-llm .
      ```
 3. **Form Security & Honeypots:**
    - Inspect all `<form>` elements to ensure:
-     - Bot honeypot fields exist (hidden inputs like `website`, `company_fax` that automated bots fill).
-     - Backend rejects/silences submissions with filled honeypots without triggering alerts or cluttering DB.
+     - Bot honeypot fields exist (hidden inputs like `website`, `company_fax` that bots fill).
+     - Backend rejects/silences submissions with filled honeypots without sending Telegram alerts or cluttering DB.
      - CSRF protection / CORS origins properly restricted on POST endpoints.
 4. **SQL Injection & Query Parameterization:**
    - Verify all database queries use parameterized placeholders (`?`, `$1`, prepared statements) and zero raw string concatenation.
@@ -70,26 +70,37 @@ Run the following checks:
 
 ---
 
-### Step 2 — Comprehensive SEO & GEO Audit (2026 AI-Ready Standard)
+### Step 2 — Comprehensive SEO & GEO Audit (2026 AI-Ready & Search Engine Standard)
 
 Inspect HTML source for public pages:
 
 1. **Meta Tags & Headings:**
-   - Exactly one `<h1>` per page.
-   - Descriptive `<title>` (between 40 and 65 characters).
-   - Compelling `<meta name="description">` (between 120 and 160 characters).
-   - Self-referencing `<link rel="canonical" href="...">` with consistent trailing slash.
+   - **Single H1 Rule:** Exactly one `<h1>` per page. In markdown/MDX blogs, verify body copy does not repeat `# Title` if the page template already renders `<h1>{title}</h1>`. Body headings must start with `##`.
+   - **Title Length Guardrail:** `<title>` must not exceed 60 characters (ideal: 40-58 chars). Avoid blindly appending brand suffixes (` | brand.com`) if the combined string exceeds 60 characters.
+   - **Meta Description Guardrail:** `<meta name="description">` must be present on every page, non-empty, and strictly between 50 and 158 characters.
+   - **Canonical Synchronization:** Self-referencing `<link rel="canonical" href="...">` with consistent trailing slash convention matching server routing.
 2. **Social & Open Graph Cards:**
    - Presence of `og:title`, `og:description`, `og:image`, `og:url`, `twitter:card`.
    - Verify that `og:image` URL resolves to an existing file and meets standard dimensions (1200x630 landscape, 1080x1080 square).
-3. **Structured Data (Schema.org JSON-LD):**
+   - Ensure `og:url` matches the exact canonical URL.
+3. **Structured Data (Schema.org JSON-LD & Google Rich Results):**
    - Validate JSON-LD script blocks using valid Schema.org vocabulary:
-     - `Organization` (with company name, logo, URL, and `sameAs` array of social profiles).
+     - `Organization` (for digital/online businesses: use `@type: 'Organization'` with `name`, `url`, `logo`, and `sameAs`. Avoid `@type: 'ProfessionalService'` or `'LocalBusiness'` unless real physical street address, phone, price range, and image are provided, as missing fields trigger Google Rich Results errors).
      - `WebSite` (with search action if applicable).
-     - `Service` or `Product` (on commercial pages).
-     - `Article` (with `author`, `datePublished`, `dateModified` on blog posts).
-     - `FAQPage` (with real questions and answers).
-4. **AI GEO & Crawler Optimization (2026 Standard):**
+     - `Service` or `Product` (on commercial pages with valid provider Organization).
+     - `Article` (on blog posts: MUST include `headline`, `image` array of URLs, `author` Person/Organization, `publisher` Organization with `logo` ImageObject, `datePublished`, `dateModified`, and `mainEntityOfPage` `@id` matching canonical URL).
+     - `FAQPage` (with real questions and accepted answers).
+   - Ensure all URLs in structured data (`@id`, `url`) use the exact canonical URL format including trailing slashes.
+4. **Multilingual & Hreflang Reciprocal Synchronization:**
+   - Hreflang target URLs must 100% match canonical URLs character-for-character, including trailing slashes.
+   - Every localized page must declare a self-referencing hreflang tag matching its canonical URL.
+   - Reciprocal return-tags: if page A points to page B via hreflang, page B must point back to page A with the exact reciprocal hreflang tag.
+   - `x-default` must point to the root canonical URL.
+5. **Internal Link Integrity & Crawler Routing:**
+   - Run build crawl to ensure **0 broken internal links** (`404` or `4XX`).
+   - All internal links (navigation, header, footer, body content, related cards) must point directly to canonical URLs to eliminate "Canonical URL has no incoming internal links".
+   - Configure server-level 301 redirects (nginx/Caddy/Astro) for common entry points and aliases (`/contact` -> `/audit/`, `/services` -> `/#services`, `/sitemap-index.xml` -> `/sitemap.xml`).
+6. **AI GEO & Crawler Optimization (2026 Standard):**
    - Check `/robots.txt`:
      - Ensure AI search bots are allowed (`GPTBot`, `PerplexityBot`, `ClaudeBot`, `OAI-SearchBot`, `Google-Extended`).
    - Check `/llms.txt`:
@@ -98,10 +109,7 @@ Inspect HTML source for public pages:
      - BLUF (Bottom Line Up Front): direct answers in the first paragraph under headings.
      - Structured comparison tables (`X vs Y`) for machine citations.
      - Zero AI clichés and no em dashes `—` in copy.
-5. **Multilingual & Hreflang (if localized):**
-   - Check bidirectional hreflang tags.
-   - Verify alternating language URLs actually exist (no 404 fallbacks).
-6. **Sitemap:**
+7. **Sitemap & Indexing:**
    - Verify `sitemap.xml` exists and is referenced in `robots.txt`.
    - Ensure only indexable, canonical URLs are listed (no `/api/`, `/admin/`, or staging routes).
 
@@ -114,7 +122,7 @@ Inspect HTML source for public pages:
    - Perform a dry-run / test submission using Chrome DevTools or Playwright:
      - Verify form displays a clear, immediate confirmation state (success toast / thank-you screen).
      - Confirm backend returns HTTP 200/201.
-     - Confirm webhook payload reaches CRM / notification alert system without formatting crashes.
+     - Confirm webhook payload reaches CRM / n8n / Telegram alert system without formatting crashes.
 2. **CTA Buttons & Action Integrity:**
    - Inspect all call-to-action buttons ("Get Quote", "Contact Us", "Book Consultation").
    - Ensure no buttons have empty handlers, dead `#` links, or `javascript:void(0)`.
@@ -123,20 +131,20 @@ Inspect HTML source for public pages:
    - Scan entire codebase for dummy placeholders:
      - Phone numbers: verify valid format with clickable `tel:+...` link (no `+123456789` or `+00 000 0000`).
      - Emails: verify clickable `mailto:...` with active domain (no `info@example.com` or `user@domain.com`).
-     - Social & Messenger links: verify active links to Telegram, WhatsApp, LinkedIn.
+     - Social & Messenger links: verify active links to Telegram (`t.me/...`), WhatsApp (`wa.me/...`), LinkedIn.
 
 ---
 
-### Step 4 — PageSpeed & Core Web Vitals (Lighthouse)
+### Step 4 — PageSpeed & Core Web Vitals (Lighthouse MCP)
 
 1. **Representative Sampling:**
-   - Run audit on up to 4 representative page types:
+   - Run audit on up to 4 representative page types (do not audit all dynamic pages to save time/tokens):
      - Homepage (`/`)
      - Core Service / Landing page
      - Blog Post / Case Study page
      - Contact page
 2. **Execute Lighthouse Audit:**
-   - Use Lighthouse or Chrome DevTools performance trace.
+   - Use the `lighthouse` MCP (`run_audit`) or Chrome DevTools performance trace.
 3. **Evaluate Core Web Vitals against Targets:**
    - **LCP (Largest Contentful Paint):** < 2.5s (Good)
    - **CLS (Cumulative Layout Shift):** < 0.1 (Good)
@@ -168,9 +176,9 @@ Inspect HTML source for public pages:
 *(Skip if project is an internal tool or private dashboard)*
 
 1. **Cookie Banner Presence & Legality:**
-   - For public-facing sites targeting EU/UK users, verify a compliant Cookie Consent banner is displayed on first visit.
+   - For public-facing sites targeting EU/UK/PL users, verify a compliant Cookie Consent banner is displayed on first visit.
 2. **Consent Gating:**
-   - Open browser with cleared storage.
+   - Open browser via Chrome DevTools or Playwright with cleared storage.
    - Verify that tracking scripts (Google Analytics 4, Meta Pixel, Microsoft Clarity) **do not load or fire cookies** prior to explicit user consent.
    - Test "Reject / Essential Only" button: verify non-essential cookies remain blocked.
    - Test "Accept All" button: verify analytics scripts activate properly.
