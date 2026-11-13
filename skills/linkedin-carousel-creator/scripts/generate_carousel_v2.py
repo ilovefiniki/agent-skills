@@ -1992,7 +1992,11 @@ def render_carousel_pdf(slides: list[dict], output_pdf: str, theme: str = "dark"
     out_path.parent.mkdir(parents=True, exist_ok=True)
 
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=True)
+        system_chrome = Path("/Applications/Google Chrome.app/Contents/MacOS/Google Chrome")
+        launch_options = {"headless": True}
+        if system_chrome.exists():
+            launch_options["executable_path"] = str(system_chrome)
+        browser = p.chromium.launch(**launch_options)
         # Use 1080x1350 viewport with device_scale_factor=2 for crisp Retina snapshots
         page = browser.new_page(viewport={"width": 1080, "height": 1350}, device_scale_factor=2)
         page.set_content(html_content, wait_until="networkidle")
