@@ -25,6 +25,7 @@ These skills establish strict spec-driven engineering, automated multi-agent gov
 | [`youtube-action-planner`](skills/youtube-action-planner/SKILL.md) | Multi-video topic researcher: batch extracts transcripts from top 10 videos and synthesizes an actionable plan. | `youtube-action-planner`, `research topic`, `generate action plan` |
 | [`instagram-reels-analyzer`](skills/instagram-reels-analyzer/SKILL.md) | Anonymous Reels downloader + multimodal inspector (hooks, on-screen text, pacing) with 0 account risk. | `instagram-reels-analyzer`, `analyze reel`, `inspect reel` |
 | [`design-director`](skills/design-director/SKILL.md) | Master frontend design orchestrator. Bans AI-slop, enforces Design Read, and routes UI tasks to three specialized engines: taste-skill (landings), ui-ux-pro-max (SaaS/dashboards), superdesign (concept exploration). | `design-director`, `use design-director`, `enforce design taste` |
+| [`vuln-watchdog`](https://github.com/ilovefiniki/vuln-watchdog) | Quiet daily security watch for your sites and servers. Checks CISA KEV, WordPress, Wordfence, Drupal, Joomla, Ubuntu, Debian and GitHub advisories against your stack; Telegram alert with a ready fix instruction only when something matches. | `set up vuln-watchdog`, `monitor vulnerabilities`, `security alerts in telegram` |
 
 ---
 

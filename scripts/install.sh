@@ -13,8 +13,25 @@ REPO_URL="https://raw.githubusercontent.com/ilovefiniki/agent-skills/main"
 
 echo "📦 Installing Agent Skill(s): $SKILL_NAME"
 
+install_vuln_watchdog() {
+    # Lives in its own repo (needs scripts, not only SKILL.md): fetch from there.
+    local src="https://raw.githubusercontent.com/ilovefiniki/vuln-watchdog/main"
+    for base in ".agents/skills/vuln-watchdog" ".claude/skills/vuln-watchdog"; do
+        mkdir -p "$base/scripts"
+        for f in SKILL.md README.md LICENSE stack.example.json scripts/vuln_watch.py scripts/inventory.sh; do
+            curl -fsSL "$src/$f" -o "$base/$f"
+        done
+        chmod +x "$base/scripts/inventory.sh" "$base/scripts/vuln_watch.py"
+    done
+    echo "✅ Successfully installed vuln-watchdog into .agents/skills/ and .claude/skills/"
+}
+
 install_skill() {
     local target_skill="$1"
+    if [ "$target_skill" = "vuln-watchdog" ]; then
+        install_vuln_watchdog
+        return
+    fi
     echo "⬇️  Downloading skill: $target_skill..."
 
     # Support universal directory structure: .agents/skills/<skill> and .claude/skills/<skill>
@@ -43,6 +60,7 @@ if [ "$SKILL_NAME" = "all" ]; then
     install_skill "youtube-summary-extractor"
     install_skill "youtube-action-planner"
     install_skill "instagram-reels-analyzer"
+    install_skill "vuln-watchdog"
 else
     install_skill "$SKILL_NAME"
 fi
